@@ -59,19 +59,8 @@ class Trainer(AbstractTrainer):
 
     """
 
-    def __init__(self, config, model,dataset):
-
+    def __init__(self, config, model):
         super(Trainer, self).__init__(config, model)
-        # === 新增代码：初始化 TrainDataLoader 并传入模型 ===
-        self.train_data = TrainDataLoader(
-            config=config,
-            dataset=dataset,  # 需要传入数据集
-            model=self.model,  # 关键：传入模型实例
-            batch_size=config['train_batch_size'],
-            shuffle=True
-        )
-
-
 
         self.logger = getLogger()
         self.learner = config['learner']
@@ -94,12 +83,6 @@ class Trainer(AbstractTrainer):
 
         self.start_epoch = 0
         self.cur_step = 0
-
-
-
-
-
-
 
         tmp_dd = {}
         for j, k in list(itertools.product(config['metrics'], config['topk'])):
@@ -220,8 +203,7 @@ class Trainer(AbstractTrainer):
             train_loss_output += 'train loss: %.4f' % losses
         return train_loss_output + ']'
 
-    def fit(self, dataset, valid_data=None, test_data=None, saved=False, verbose=True):
-    #def fit(self, train_data, valid_data=None, test_data=None, saved=False, verbose=True):
+    def fit(self, train_data, valid_data=None, test_data=None, saved=False, verbose=True):
         r"""Train the model based on the train data and the valid data.
 
         Args:
@@ -239,9 +221,7 @@ class Trainer(AbstractTrainer):
             # train
             training_start_time = time()
             self.model.pre_epoch_processing()
-            #train_loss = self._train_epoch(train_data, epoch_idx)
-            train_loss = self._train_epoch(self.train_data, epoch_idx)  # 使用内部加载器
-
+            train_loss = self._train_epoch(train_data, epoch_idx)
             if torch.is_tensor(train_loss):
                 # get nan loss
                 break
